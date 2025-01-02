@@ -28,11 +28,13 @@
 
     }
 }
-<MudCard>
+<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
     <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Style="font-weight: bold; color: #2C3E50;">
         📊 Machine Speed Performance
     </MudText>
-    <MudPaper Class="pa-4">
-        <MudChart ChartType="ChartType.Bar" T="double" XAxisLabels="@XAxisLabels" ChartSeries="@ChartSeriesData" Height="400px" Width="700px" />
-    </MudPaper>
-</MudCard>
+    <MudCard>
+        <MudPaper Class="pa-4">
+            <MudChart ChartType="ChartType.Bar" T="double" XAxisLabels="@XAxisLabels" ChartSeries="@ChartSeriesData" Height="400px" Width="700px" />
+        </MudPaper>
+    </MudCard>
+</MudContainer>

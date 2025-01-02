@@ -1,0 +1,55 @@
+﻿@using MudBlazor
+@using MachineTracking.Domain.DTOs
+@using MudBlazor.Components.Chart.Models
+
+<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
+    <MudCard>
+        <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Style="font-weight: bold; color: #2C3E50;">
+            📊 Machine Speed Performance
+        </MudText>
+        <MudPaper Elevation="4" Class="pa-4">
+            @if (ChartSeriesData != null && ChartSeriesData.Any() && XAxisLabels != null && XAxisLabels.Any())
+            {
+                <MudChart ChartType="ChartType.Line" ChartSeries="@ChartSeriesData" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" Height="350px" />
+            }
+            else
+            {
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="color: gray;">
+                    No data available to display the chart.
+                </MudText>
+            }
+        </MudPaper>
+    </MudCard>
+</MudContainer>
+
+@code {
+
+    [Parameter]
+    public IDictionary<DateTime, MachineHistoryDTO> MachineData { get; set; } = new Dictionary<DateTime, MachineHistoryDTO>();
+
+    private int Index = -1;
+    public string[] XAxisLabels;
+    private List<ChartSeries> ChartSeriesData;
+    protected override void OnParametersSet()
+    {
+        PrepareChartData();
+    }
+
+    private void PrepareChartData()
+    {
+        var data = MachineData.OrderBy(m => m.Key).ToDictionary();
+        if (MachineData != null && MachineData.Any())
+        {
+            ChartSeriesData = new List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Chain Moves Per Second",
+                    Data = data.Values.Select(x => x.ChainMovesPerSecond).ToArray()
+                }
+            };
+            XAxisLabels = new string[MachineData.Count()];
+            // XAxisLabels = data.MachineHistories.Select(x => x.DataReceivedTimestamp.ToString("HH:mm:ss")).ToArray();
+        }
+    }
+}

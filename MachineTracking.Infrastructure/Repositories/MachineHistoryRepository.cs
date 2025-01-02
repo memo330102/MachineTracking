@@ -18,14 +18,16 @@ namespace MachineTracking.Infrastructure.Repositories
         public async Task AddAsync(MachineHistoryDTO entity)
         {
             const string query = @"
-                 INSERT INTO machinehistory (MachineId, Status, ChainMovesPerSecond, ArticleNumber)
-                 VALUES (@MachineId, @Status, @ChainMovesPerSecond, @ArticleNumber)
+                 INSERT INTO machinehistory (MachineId, Status,StatusId,Topic, ChainMovesPerSecond, ArticleNumber)
+                 VALUES (@MachineId, @Status,@StatusId,@Topic, @ChainMovesPerSecond, @ArticleNumber)
                  RETURNING Id";
 
             var response = await _sqlQuery.ExecuteAsync(query, new
             {
                 MachineId = entity.MachineId,
                 Status = entity.Status,
+                StatusId = entity.StatusId,
+                Topic = entity.Topic,
                 ChainMovesPerSecond = entity.ChainMovesPerSecond,
                 ArticleNumber = entity.ArticleNumber,
             });

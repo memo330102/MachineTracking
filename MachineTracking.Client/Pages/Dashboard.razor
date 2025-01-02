@@ -3,11 +3,14 @@
 @using MachineTracking.Client.Shared.Helpers.Interfaces
 @using MachineTracking.Client.Components.MachineHistory
 @using MachineTracking.Domain.DTOs
+@using MachineTracking.Domain.Enums
 @using MudBlazor
 @using System.Text.Json;
 @inject SignalRService SignalRService
 @inject IHttpClientProvider HttpClientProvider
 @inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
     <MudCard Class="mud-elevation-4" Style="padding: 20px; border-radius: 8px;">
@@ -27,7 +30,7 @@
 
                     <MudCardContent>
                         <MudText Style="font-size: 1rem; color: #7F8C8D; line-height: 1.6;">
-                            <strong>Status:</strong> @GetStatusChip(machine.Status)
+                            <strong>Status:</strong> @GetStatusChip(machine.StatusId)
                         </MudText>
                         <MudText Style="font-size: 1rem; color: #7F8C8D; line-height: 1.6;">
                             <strong>Chain Moves/Second:</strong> @machine.ChainMovesPerSecond
@@ -50,7 +53,7 @@
                                 <MudButton Variant="Variant.Text"
                                            Color="Color.Default"
                                            Size="Size.Small"
-                                           @onclick="() => OpenDetailsDialog(machine.MachineId)"
+                                           @onclick="() => OpenMachineDetailPage(machine.MachineId)"
                                            Style="border-radius: 50px; padding: 6px 12px; background-color: transparent;
                                                   color: #34495E; text-transform: none; font-size: 0.875rem;
                                                   transition: color 0.3s, opacity 0.3s;
@@ -68,12 +71,9 @@
         </div>
     </MudCard>
 </MudContainer>
-<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
-    <ChainMovesLineGraph MachineData="LastestDataOfAllMachines" />
-</MudContainer>
-<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
-    <ChainMovesPieGraph MachineData="LastestDataOfAllMachines" />
-</MudContainer>
+
+<ChainMovesBarChart MachineData="LastestDataOfAllMachines" />
+<ChainMovesPieChart MachineData="LastestDataOfAllMachines" />
 
 @code {
     private MachineHistoryDTO machineData;
@@ -93,6 +93,7 @@
         var newData = JsonSerializer.Deserialize<MachineHistoryDTO>(data);
         if (newData != null)
         {
+            newData.StatusId = MapStatusToStatusId(newData);
             machineData = newData;
             if (LastestDataOfAllMachines.ContainsKey(newData.MachineId))
             {
@@ -127,22 +128,28 @@
         return data.ToDictionary(item => item.MachineId, item => item);
     }
 
-    private RenderFragment GetStatusChip(string status) => builder =>
+    private RenderFragment GetStatusChip(int statusId) => builder =>
     {
-        builder.OpenComponent<MudChip<string>>(0);
+        builder.OpenComponent<MudChip<int>>(0);
         builder.AddAttribute(1, "Style", "margin: 0;");
-        builder.AddAttribute(2, "Color", status switch
-        {
-            "Running" => Color.Success,
-            "Stopped" => Color.Error,
-            _ => Color.Warning
-        });
+        builder.AddAttribute(2, "Color", GetChipColor(statusId));
         builder.AddAttribute(3, "ChildContent", (RenderFragment)(chipBuilder =>
-        {
-            chipBuilder.AddContent(0, status);
-        }));
+            {
+                chipBuilder.AddContent(0, Enum.GetName(typeof(MachineStatusTypeEnum), statusId) ?? statusId.ToString());
+            }));
         builder.CloseComponent();
     };
+
+    private Color GetChipColor(int statusId)
+    {
+        return statusId switch
+        {
+            (int)MachineStatusTypeEnum.Active => Color.Success,
+            (int)MachineStatusTypeEnum.Inactive => Color.Default,
+            (int)MachineStatusTypeEnum.Idle => Color.Warning,
+            _ => Color.Error
+        };
+    }
 
     public string GetRelativeTime(DateTime dataReceivedData)
     {
@@ -176,5 +183,23 @@
             };
 
         DialogService.Show<MachineHistoryList>($"📜 Past Activity of Machine {machineId}", parameters, options);
+    }
+
+    private async Task OpenMachineDetailPage(string machineId)
+    {
+        var url = $"/machinedetail/{machineId}";
+
+        NavigationManager.NavigateTo(url);
+    }
+
+    private int MapStatusToStatusId(MachineHistoryDTO machineHistory)
+    {
+        return machineHistory.Status switch
+        {
+            "EngineOn" when machineHistory.ChainMovesPerSecond > 0 => (int)MachineStatusTypeEnum.Active,
+            "EngineOn" when machineHistory.ChainMovesPerSecond == 0 => (int)MachineStatusTypeEnum.Idle,
+            "EngineOff" when machineHistory.ChainMovesPerSecond <= 0 => (int)MachineStatusTypeEnum.Inactive,
+            _ => (int)MachineStatusTypeEnum.Unexpected
+        };
     }
 }

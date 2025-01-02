@@ -1,6 +1,8 @@
 ﻿using MachineTracking.Domain.DTOs;
+using MachineTracking.Domain.Enums;
 using MachineTracking.Domain.Interfaces.Application;
 using MachineTracking.Domain.Interfaces.Infrastructure;
+using Serilog;
 using System.Text.Json;
 
 namespace MachineTracking.Application.Services
@@ -8,9 +10,11 @@ namespace MachineTracking.Application.Services
     public class MqttDataService : IMqttDataService
     {
         private readonly IMachineHistoryRepository _machineHistoryRepository;
-        public MqttDataService(IMachineHistoryRepository machineHistoryRepository)
+        private readonly ILogger _logger;
+        public MqttDataService(IMachineHistoryRepository machineHistoryRepository, ILogger logger)
         {
             _machineHistoryRepository = machineHistoryRepository;
+            _logger = logger;
         }
 
         public async Task SaveMqttMessageAsync(string topic, string message, CancellationToken cancellationToken)
@@ -19,15 +23,33 @@ namespace MachineTracking.Application.Services
             {
                 var machineHistory = JsonSerializer.Deserialize<MachineHistoryDTO>(message);
 
-                await _machineHistoryRepository.AddAsync(machineHistory);
+                if (machineHistory == null)
+                {
+                    _logger.Error($"MQTT Error : Invalid message received on topic '{topic}': {message}");
+                    return;
+                }
 
-                Console.WriteLine($"Message received on topic '{topic}': {message}");
+                machineHistory.Topic = topic;
+                machineHistory.StatusId = MapStatusToStatusId(machineHistory);
+
+                await _machineHistoryRepository.AddAsync(machineHistory);
+                _logger.Information($"Message processed and saved for topic '{topic}': {message}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.Error($"MQTT Error : Unexpected error while receiving message on topic'{topic}': {message} : {ex}");
             }
+        }
 
+        private int MapStatusToStatusId(MachineHistoryDTO machineHistory)
+        {
+            return machineHistory.Status switch
+            {
+                "EngineOn" when machineHistory.ChainMovesPerSecond > 0 => (int)MachineStatusTypeEnum.Active,
+                "EngineOn" when machineHistory.ChainMovesPerSecond == 0 => (int)MachineStatusTypeEnum.Idle,
+                "EngineOff" when machineHistory.ChainMovesPerSecond <= 0 => (int)MachineStatusTypeEnum.Inactive,
+                _ => (int)MachineStatusTypeEnum.Unexpected
+            };
         }
     }
 
