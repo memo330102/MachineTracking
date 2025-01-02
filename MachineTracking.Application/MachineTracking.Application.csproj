@@ -7,12 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MachineTracking.Domain\MachineTracking.Domain.csproj" />
-    <ProjectReference Include="..\MachineTracking.Infrastructure\MachineTracking.Infrastructure.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.34" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Serilog" Version="4.2.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Middleware\" />
+    <ProjectReference Include="..\MachineTracking.Domain\MachineTracking.Domain.csproj" />
+    <ProjectReference Include="..\MachineTracking.Infrastructure\MachineTracking.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

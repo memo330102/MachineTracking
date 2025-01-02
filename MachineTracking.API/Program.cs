@@ -1,3 +1,4 @@
+using MachineTracking.Application.MiddleWare;
 using MachineTracking.Application.Services;
 using MachineTracking.Domain.Interfaces.Application;
 using MachineTracking.Domain.Interfaces.Infrastructure;
@@ -8,19 +9,20 @@ using MachineTracking.MessageBroker.Hubs;
 using MachineTracking.MessageBroker.Services;
 using MQTTnet;
 using MQTTnet.Client;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins("https://localhost:7045") // Frontend URL
+            policy.WithOrigins("https://localhost:7045") 
                   .AllowAnyHeader()
                   .AllowAnyMethod()
-                  .AllowCredentials();  // Allow credentials (cookies, authentication)
+                  .AllowCredentials(); 
         });
 });
 builder.Services.AddTransient<ISqlQuery, SqlQuery>();
@@ -36,12 +38,23 @@ builder.Services.AddHostedService<MqttBackendService>();
 
 builder.Services.AddSignalR();
 
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration) 
+    .CreateLogger();
+
+builder.Host.UseSerilog(); 
+
+builder.Services.AddSingleton(Log.Logger);
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionHandler>();
+
 app.UseCors("AllowSpecificOrigin");
 app.MapHub<MachineDataHub>("/machinedatahub");
 

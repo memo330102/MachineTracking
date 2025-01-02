@@ -44,7 +44,7 @@ namespace MachineTracking.API.Controllers
             return record is not null ? Ok(record) : NotFound();
         }
 
-        [HttpPost]
+        [HttpPost("InsertMachineHistory")]
         public async Task<IActionResult> Create([FromBody] MachineHistoryDTO machineHistory)
         {
             await _machineHistoryService.AddAsync(machineHistory);
