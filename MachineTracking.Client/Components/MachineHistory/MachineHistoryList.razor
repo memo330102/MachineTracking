@@ -1,0 +1,113 @@
+﻿@using MachineTracking.Client.Shared.Helpers
+@using MachineTracking.Client.Shared.Helpers.Interfaces
+@using MachineTracking.Domain.DTOs
+@using MudBlazor
+@using System.Text.Json;
+@inject SignalRService SignalRService
+@inject IHttpClientProvider HttpClientProvider
+
+<MudContainer Class="mud-container-max-width" MaxWidth="MaxWidth.Large" Style="padding: 16px;">
+    <MudCard Class="mud-elevation-4" Style="padding: 16px;">
+
+        <MudTextField Label="Search"
+                      Variant="Variant.Text"
+                      @bind-Value="searchText"
+                      Immediate="true"
+                      Adornment="Adornment.End"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      OnAdornmentClick="HandleSearchOnAdornmentIcon" />
+
+        <MudTable Items="data.MachineHistories" Bordered="true" Hover="true" Striped="true" Breakpoint="Breakpoint.Sm" TotalItems="totalItems">
+            <HeaderContent>
+                <MudTh>Machine ID</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Chain Moves/Second</MudTh>
+                <MudTh>Article Number</MudTh>
+                <MudTh>Timestamp</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Machine ID">@context.MachineId</MudTd>
+                <MudTd DataLabel="Status">
+                    @if (@context.Status == "Running")
+                    {
+                        <MudChip T="string" Color="Color.Success" Style="margin: 0;">Running</MudChip>
+                    }
+                    else if (@context.Status == "Stopped")
+                    {
+                        <MudChip T="string" Color="Color.Error" Style="margin: 0;">Stopped</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Warning" Style="margin: 0;">Idle</MudChip>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Chain Moves/Second">@context.ChainMovesPerSecond</MudTd>
+                <MudTd DataLabel="Article Number">@context.ArticleNumber</MudTd>
+                <MudTd DataLabel="Timestamp">
+                    <MudTooltip Text="Data received timestamp">@context.DataReceivedTimestamp</MudTooltip>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudCard>
+    <MudCard Class="mud-elevation-4" Style="padding: 16px;">
+        <MudGrid Justify="Justify.Center">
+            <MudItem xs="12" sm="12" md="12">
+                <MudPagination Color="Color.Primary" Count="GetTotalPages()" SelectedChanged="HandlePagination" />
+            </MudItem>
+        </MudGrid>
+    </MudCard>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string MachineId { get; set; }
+
+    private MachineHistoryPaginatedResponse data = new();
+    private string getMachineHistoriesEndpoint = "api/MachineHistory/GetMachineHistoriesAsync";
+    private string searchText = "";
+    private int totalItems = 25;
+    private int pageNumber = 1;
+    private int pageSize = 5;
+    protected override async Task OnInitializedAsync()
+    {
+        data = await GetMachineHistoriesAsync();
+    }
+
+    private async Task<MachineHistoryPaginatedResponse> GetMachineHistoriesAsync()
+    {
+        var response = await HttpClientProvider.RequestGetByObject(getMachineHistoriesEndpoint, new MachineHistoryGetRequestDTO()
+            {
+                MachineId = MachineId,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SearchText = searchText
+            });
+
+        if (response.IsSuccessStatusCode)
+        {
+            data = await response.Content.ReadFromJsonAsync<MachineHistoryPaginatedResponse>() ?? new MachineHistoryPaginatedResponse();
+        }
+
+        return data;
+    }
+
+    private async Task HandleSearchOnAdornmentIcon()
+    {
+        pageNumber = 1;
+        data = await GetMachineHistoriesAsync();
+        await HandlePagination(pageNumber);
+    }
+
+    private int GetTotalPages()
+    {
+        var totalPages = (double)data.TotalCount / (double)pageSize;
+
+        return Convert.ToInt32(Math.Ceiling(totalPages));
+    }
+
+    private async Task HandlePagination(int page)
+    {
+        pageNumber = page;
+        data = await GetMachineHistoriesAsync();
+    }
+}

@@ -1,0 +1,180 @@
+﻿@page "/tracking"
+@using MachineTracking.Client.Shared.Helpers
+@using MachineTracking.Client.Shared.Helpers.Interfaces
+@using MachineTracking.Client.Components.MachineHistory
+@using MachineTracking.Domain.DTOs
+@using MudBlazor
+@using System.Text.Json;
+@inject SignalRService SignalRService
+@inject IHttpClientProvider HttpClientProvider
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
+    <MudCard Class="mud-elevation-4" Style="padding: 20px; border-radius: 8px;">
+
+        <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Style="font-weight: bold; color: #2C3E50;">
+            🔄 Machines & Latest Data
+        </MudText>
+        <div style="overflow-x: auto; display: flex; gap: 16px; padding: 8px; max-height: 400px; overflow-y: hidden; margin-bottom: 16px;">
+            @foreach (var machine in LastestDataOfAllMachines.Values)
+            {
+                <MudCard Class="mud-elevation-4" Style="min-width: 280px; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                    <MudCardHeader Style="background-color: #f0f0f0; border-radius: 8px;">
+                        <MudText Typo="Typo.h6" Align="Align.Center" Style="font-weight: 600; color: #34495E;">
+                            Machine ID: @machine.MachineId
+                        </MudText>
+                    </MudCardHeader>
+
+                    <MudCardContent>
+                        <MudText Style="font-size: 1rem; color: #7F8C8D; line-height: 1.6;">
+                            <strong>Status:</strong> @GetStatusChip(machine.Status)
+                        </MudText>
+                        <MudText Style="font-size: 1rem; color: #7F8C8D; line-height: 1.6;">
+                            <strong>Chain Moves/Second:</strong> @machine.ChainMovesPerSecond
+                        </MudText>
+                        <MudText Style="font-size: 1rem; color: #7F8C8D; line-height: 1.6;">
+                            <strong>Article Number:</strong> @machine.ArticleNumber
+                        </MudText>
+                        <MudText Style="font-size: 1rem; color: #7F8C8D; line-height: 1.6; font-weight: 400;">
+                            <strong>
+                                Data
+                                Received Date:
+                            </strong>
+                            <MudTooltip Text="@machine.DataReceivedTimestamp.ToString("yyyy-MM-dd HH:mm:ss")">
+                                <span style="color: #34495E;">@GetRelativeTime(machine.DataReceivedTimestamp)</span>
+                                <MudIconButton Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Style="color: #7F8C8D; margin-left: 8px;" />
+                            </MudTooltip>
+                        </MudText>
+                        <MudGrid>
+                            <MudItem xs="12" Style="display: flex; justify-content: flex-end;">
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Default"
+                                           Size="Size.Small"
+                                           @onclick="() => OpenDetailsDialog(machine.MachineId)"
+                                           Style="border-radius: 50px; padding: 6px 12px; background-color: transparent;
+                                                  color: #34495E; text-transform: none; font-size: 0.875rem;
+                                                  transition: color 0.3s, opacity 0.3s;
+                                                  display: flex; align-items: center; justify-content: center;
+                                                  border: 1px solid #BDC3C7;">
+
+                                    <MudIcon Icon="Icons.Material.Filled.Info" Style="margin-right: 8px; font-size: 18px;" />
+                                    Details
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            }
+        </div>
+    </MudCard>
+</MudContainer>
+<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
+    <ChainMovesLineGraph MachineData="LastestDataOfAllMachines" />
+</MudContainer>
+<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
+    <ChainMovesPieGraph MachineData="LastestDataOfAllMachines" />
+</MudContainer>
+
+@code {
+    private MachineHistoryDTO machineData;
+    private IDictionary<string, MachineHistoryDTO> LastestDataOfAllMachines = new Dictionary<string, MachineHistoryDTO>();
+    private string getLastestDataOfAllMachinesAsyncEndpoint = "api/MachineHistory/GetLastestDataOfAllMachinesAsync";
+
+    protected override async Task OnInitializedAsync()
+    {
+        LastestDataOfAllMachines = await GetLastestDataOfAllMachinesAsync();
+
+        SignalRService.OnMachineDataReceived += OnMachineDataReceived;
+        await SignalRService.StartAsync();
+    }
+
+    private void OnMachineDataReceived(string data)
+    {
+        var newData = JsonSerializer.Deserialize<MachineHistoryDTO>(data);
+        if (newData != null)
+        {
+            machineData = newData;
+            if (LastestDataOfAllMachines.ContainsKey(newData.MachineId))
+            {
+                LastestDataOfAllMachines[newData.MachineId] = newData;
+            }
+            else
+            {
+                LastestDataOfAllMachines.Add(newData.MachineId, newData);
+            }
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        SignalRService.OnMachineDataReceived -= OnMachineDataReceived;
+    }
+
+    private async Task<IDictionary<string, MachineHistoryDTO>> GetLastestDataOfAllMachinesAsync()
+    {
+        var response = await HttpClientProvider.RequestGet(getLastestDataOfAllMachinesAsyncEndpoint);
+
+        var data = Enumerable.Empty<MachineHistoryDTO>();
+
+        if (response.IsSuccessStatusCode)
+        {
+            data = await response.Content.ReadFromJsonAsync<IEnumerable<MachineHistoryDTO>>()
+                             ?? Enumerable.Empty<MachineHistoryDTO>();
+        }
+
+        return data.ToDictionary(item => item.MachineId, item => item);
+    }
+
+    private RenderFragment GetStatusChip(string status) => builder =>
+    {
+        builder.OpenComponent<MudChip<string>>(0);
+        builder.AddAttribute(1, "Style", "margin: 0;");
+        builder.AddAttribute(2, "Color", status switch
+        {
+            "Running" => Color.Success,
+            "Stopped" => Color.Error,
+            _ => Color.Warning
+        });
+        builder.AddAttribute(3, "ChildContent", (RenderFragment)(chipBuilder =>
+        {
+            chipBuilder.AddContent(0, status);
+        }));
+        builder.CloseComponent();
+    };
+
+    public string GetRelativeTime(DateTime dataReceivedData)
+    {
+        var timeSpan = DateTime.Now - dataReceivedData;
+
+        if (timeSpan.TotalSeconds < 60)
+            return $"{(int)timeSpan.TotalSeconds} seconds ago";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes} minutes ago";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours} hours ago";
+        if (timeSpan.TotalDays < 30)
+            return $"{(int)timeSpan.TotalDays} days ago";
+        if (timeSpan.TotalDays < 365)
+            return $"{(int)(timeSpan.TotalDays / 30)} months ago";
+
+        return $"{(int)(timeSpan.TotalDays / 365)} years ago";
+    }
+
+    private async Task OpenDetailsDialog(string machineId)
+    {
+        var parameters = new DialogParameters
+        {
+            { "MachineId", machineId }  
+        };
+
+        var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.ExtraExtraLarge,
+                CloseButton = true
+            };
+
+        DialogService.Show<MachineHistoryList>($"📜 Past Activity of Machine {machineId}", parameters, options);
+    }
+}

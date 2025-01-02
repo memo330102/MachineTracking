@@ -1,0 +1,47 @@
+﻿@page "/dashboard"
+@using MachineTracking.Client.Shared.Helpers
+@using MachineTracking.Domain.DTOs
+@inject SignalRService SignalRService
+@using System.Text.Json;
+
+<h3>Machine Statistics</h3>
+
+@if (machineData != null)
+{
+    <div>
+        <p><strong>Machine ID:</strong> @machineData.MachineId</p>
+        <p><strong>Status:</strong> @machineData.Status</p>
+        <p><strong>ArticleNumber:</strong> @machineData.ArticleNumber</p>
+        <p><strong>ChainMovesPerSecond:</strong> @machineData.ChainMovesPerSecond</p>
+        <p><strong>Timestamp:</strong> @machineData.DataReceivedTimestamp</p>
+    </div>
+}
+else
+{
+    <p>Waiting for data...</p>
+}
+
+@code {
+    private MachineHistoryDTO machineData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SignalRService.OnMachineDataReceived += (data) =>
+        {
+            machineData = JsonSerializer.Deserialize<MachineHistoryDTO>(data);
+
+            InvokeAsync(StateHasChanged);
+        };
+
+        await SignalRService.StartAsync();
+    }
+
+    public void Dispose()
+    {
+        SignalRService.OnMachineDataReceived -= (data) =>
+        {
+            machineData = JsonSerializer.Deserialize<MachineHistoryDTO>(data);
+            InvokeAsync(StateHasChanged);
+        };
+    }
+}

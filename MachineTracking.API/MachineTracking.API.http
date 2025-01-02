@@ -1,0 +1,6 @@
+@MachineTracking.API_HostAddress = http://localhost:5073
+
+GET {{MachineTracking.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

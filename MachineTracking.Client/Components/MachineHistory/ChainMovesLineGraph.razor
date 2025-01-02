@@ -1,0 +1,38 @@
+﻿@using MudBlazor
+@using MachineTracking.Domain.DTOs
+@using MudBlazor.Components.Chart.Models
+
+@code {
+    [Parameter]
+    public IDictionary<string, MachineHistoryDTO> MachineData { get; set; } = new Dictionary<string, MachineHistoryDTO>();
+
+    public string[] XAxisLabels;
+    private List<ChartSeries> ChartSeriesData;
+    protected override void OnParametersSet()
+    {
+        PrepareChartData();
+    }
+
+    private void PrepareChartData()
+    {
+        ChartSeriesData = new List<ChartSeries>
+        {
+            new ChartSeries
+            {
+                Name = "Chain Moves Per Second",
+                Data = MachineData.Values.Select(x => x.ChainMovesPerSecond).ToArray()
+            }
+        };
+
+        XAxisLabels = MachineData.Keys.ToArray();
+
+    }
+}
+<MudCard>
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Style="font-weight: bold; color: #2C3E50;">
+        📊 Machine Speed Performance
+    </MudText>
+    <MudPaper Class="pa-4">
+        <MudChart ChartType="ChartType.Bar" T="double" XAxisLabels="@XAxisLabels" ChartSeries="@ChartSeriesData" Height="400px" Width="700px" />
+    </MudPaper>
+</MudCard>
