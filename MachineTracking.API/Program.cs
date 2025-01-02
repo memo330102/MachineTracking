@@ -16,13 +16,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
+    var allowedOrigin = builder.Configuration["AllowedOrigins:FrontendURL"];
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins("https://localhost:7045") 
+            policy.WithOrigins(allowedOrigin)
                   .AllowAnyHeader()
                   .AllowAnyMethod()
-                  .AllowCredentials(); 
+                  .AllowCredentials();
         });
 });
 builder.Services.AddTransient<ISqlQuery, SqlQuery>();
@@ -56,7 +57,7 @@ var app = builder.Build();
 app.UseMiddleware<GlobalExceptionHandler>();
 
 app.UseCors("AllowSpecificOrigin");
-app.MapHub<MachineDataHub>("/machinedatahub");
+app.MapHub<MachineDataHub>(builder.Configuration["Hubs:MachineHub"]);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

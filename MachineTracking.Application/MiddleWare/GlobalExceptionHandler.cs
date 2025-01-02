@@ -30,7 +30,6 @@ namespace MachineTracking.Application.MiddleWare
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            //Log.Error("An unexpected error occurred.");
 
             context.Response.ContentType = "application/json";
 
@@ -69,7 +68,7 @@ namespace MachineTracking.Application.MiddleWare
                 Message = message,
                 Detailed = exception.Message
             };
-
+            _logger.Error("Error: {Response}", JsonConvert.SerializeObject(response));
             await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
         }
     }
