@@ -12,5 +12,6 @@ namespace MachineTracking.Domain.DTOs
         public int PageSize { get; set; } = 6;
         public string SearchText { get; set; } = string.Empty;
         public string MachineId { get; set; } = string.Empty;
+        public TimeSpan Time { get; set; }
     }
 }

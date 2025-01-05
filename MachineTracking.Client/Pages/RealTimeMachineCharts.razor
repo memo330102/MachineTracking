@@ -9,9 +9,36 @@
 @inject IHttpClientProvider HttpClientProvider
 @using MachineTracking.Client.Components.MachineHistory
 
+<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
+        <MudGrid>
+            <MudItem xs="0" sm="8" lg="8"></MudItem>
+            <MudItem xs="12" sm="4" lg="4">
+                <MudPaper Elevation="6" Class="pa-8 rounded-lg shadow-lg">
+                    <MudSelect T="MachineLineChartTimeEnum" OpenIcon="@Icons.Material.Filled.LockClock"
+                           AdornmentColor="Color.Default" ValueChanged="OnTimeRangeChanged">
+                        <MudSelectItem Value="@MachineLineChartTimeEnum.None">All Data</MudSelectItem>
+                        <MudSelectItem Value="@MachineLineChartTimeEnum.Last_1_Hour">Last 1 Hour</MudSelectItem>
+                        <MudSelectItem Value="@MachineLineChartTimeEnum.Last_2_Hour">Last 2 Hour</MudSelectItem>
+                        <MudSelectItem Value="@MachineLineChartTimeEnum.Last_3_Hour">Last 3 Hour</MudSelectItem>
+                        <MudSelectItem Value="@MachineLineChartTimeEnum.Last_6_Hour">Last 6 Hour</MudSelectItem>
+                        <MudSelectItem Value="@MachineLineChartTimeEnum.Last_12_Hour">Last 12 Hour</MudSelectItem>
+                        <MudSelectItem Value="@MachineLineChartTimeEnum.Last_24_Hour">Last 24 Hour</MudSelectItem>
+                    </MudSelect>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+</MudContainer> 
+
+
 @if (machineData.Values.Any() == true)
 {
     <ChainMovesLineChart MachineData="machineData" />
+}
+else
+{
+    <MudPaper Elevation="3" Class="pa-4">
+        <MudText Typo="Typo.h6" Align="Align.Center" Class="mt-4">No data available for the selected time range.</MudText>
+    </MudPaper>
 }
 
 @code {
@@ -21,7 +48,8 @@
     private MachineHistoryPaginatedResponse data = new();
     private IDictionary<DateTime, MachineHistoryDTO> machineData = new Dictionary<DateTime, MachineHistoryDTO>();
     private string getMachineHistoriesEndpoint = "api/MachineHistory/GetMachineHistoriesAsync";
-
+    private MachineLineChartTimeEnum selectedTimeRange = MachineLineChartTimeEnum.None;
+    private TimeSpan timeRange = TimeSpan.Zero;
     protected override async Task OnInitializedAsync()
     {
         data = await GetMachineHistoriesAsync();
@@ -49,7 +77,8 @@
                 MachineId = MachineId,
                 PageNumber = 0,
                 PageSize = 0,
-                SearchText = ""
+                SearchText = "",
+                Time = timeRange
             });
 
         if (response.IsSuccessStatusCode)
@@ -59,5 +88,26 @@
         }
 
         return data;
+    }
+
+    private void FilterMachineData()
+    {
+        timeRange = selectedTimeRange switch
+        {
+            MachineLineChartTimeEnum.Last_1_Hour => TimeSpan.FromHours(1),
+            MachineLineChartTimeEnum.Last_2_Hour => TimeSpan.FromHours(2),
+            MachineLineChartTimeEnum.Last_3_Hour => TimeSpan.FromHours(3),
+            MachineLineChartTimeEnum.Last_6_Hour => TimeSpan.FromHours(6),
+            MachineLineChartTimeEnum.Last_12_Hour => TimeSpan.FromHours(12),
+            MachineLineChartTimeEnum.Last_24_Hour => TimeSpan.FromHours(24),
+            _ => TimeSpan.Zero
+        };
+    }
+
+    private async Task OnTimeRangeChanged(MachineLineChartTimeEnum value)
+    {
+        selectedTimeRange = value;
+        FilterMachineData();
+        await GetMachineHistoriesAsync();
     }
 }

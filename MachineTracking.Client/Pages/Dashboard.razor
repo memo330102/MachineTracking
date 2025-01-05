@@ -13,6 +13,19 @@
 @inject IJSRuntime JSRuntime
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mud-p-4">
+    <MudGrid>
+        <MudItem xs="12" sm="8" lg="8"></MudItem>
+        <MudItem xs="12" sm="4" lg="4">
+            <MudPaper Elevation="4" Class="p-4 rounded-lg">
+                <MudText Typo="Typo.h6" Align="Align.Start" Color="Color.Primary" Class="mb-3">Show Active Machines Only</MudText>
+                <MudSwitch T="bool"  Color="Color.Primary"
+                           ValueChanged="OnSwitchChanged" Class="custom-switch" />
+            </MudPaper>
+        </MudItem>
+
+    </MudGrid>
+</MudContainer>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mud-p-4">
     <MudCard Class="mud-elevation-4 mud-p-4" Style="border-radius: 12px;">
         <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Class="mud-mb-4"
                  Style="font-weight: bold; color: #2C3E50;">
@@ -82,12 +95,12 @@
 </MudContainer>
 
 <ChainMovesBarChart MachineData="LastestDataOfAllMachines" />
-<ChainMovesPieChart MachineData="LastestDataOfAllMachines" />
 
 @code {
     private MachineHistoryDTO machineData;
     private IDictionary<string, MachineHistoryDTO> LastestDataOfAllMachines = new Dictionary<string, MachineHistoryDTO>();
     private string getLastestDataOfAllMachinesAsyncEndpoint = "api/MachineHistory/GetLastestDataOfAllMachinesAsync";
+    public bool activeOnly { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -178,7 +191,7 @@
         return $"{(int)(timeSpan.TotalDays / 365)} years ago";
     }
 
-    private async Task OpenDetailsDialog(string machineId)
+    private void OpenDetailsDialog(string machineId)
     {
         var parameters = new DialogParameters
         {
@@ -218,4 +231,52 @@
             _ => (int)MachineStatusTypeEnum.Unexpected
         };
     }
+
+    private async Task OnSwitchChanged(bool value)
+    {
+        activeOnly = value;
+
+        if (activeOnly)
+        {
+            LastestDataOfAllMachines = LastestDataOfAllMachines.Where(l => l.Value.StatusId == (int)MachineStatusTypeEnum.Active).ToDictionary();
+        }
+        else
+        {
+            LastestDataOfAllMachines = await GetLastestDataOfAllMachinesAsync();
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
 }
+
+<style>
+    .custom-switch {
+        width: 100%;
+        height: 50px;
+    }
+
+        /* Style the MudSwitch thumb (the circular button) */
+        .custom-switch .mud-switch-thumb {
+            background-color: #fff; /* Color of the thumb */
+            border: 2px solid #3f51b5; /* Color of the border around the thumb */
+            transition: transform 0.3s ease; /* Smooth transition for the thumb movement */
+        }
+
+        /* When the switch is ON (active state), apply a different color */
+        .custom-switch.mud-switch-checked .mud-switch-thumb {
+            background-color: #3f51b5; /* Color of the thumb when ON */
+            border-color: #fff; /* Border color for the thumb when ON */
+        }
+
+        /* Style the background of the switch when ON */
+        .custom-switch.mud-switch-checked .mud-switch-track {
+            background-color: #3f51b5; /* Color of the track when ON */
+            border-color: #3f51b5; /* Border color when ON */
+        }
+
+        /* Style the background of the switch when OFF */
+        .custom-switch .mud-switch-track {
+            background-color: #e0e0e0; /* Color of the track when OFF */
+            border-color: #c5c5c5; /* Border color when OFF */
+        }
+</style> 

@@ -1,6 +1,7 @@
 ﻿@using MachineTracking.Client.Shared.Helpers
 @using MachineTracking.Client.Shared.Helpers.Interfaces
 @using MachineTracking.Domain.DTOs
+@using MachineTracking.Domain.Enums
 @using MudBlazor
 @using System.Text.Json;
 @inject SignalRService SignalRService
@@ -28,17 +29,21 @@
             <RowTemplate>
                 <MudTd DataLabel="Machine ID">@context.MachineId</MudTd>
                 <MudTd DataLabel="Status">
-                    @if (@context.Status == "Running")
+                    @if (@context.StatusId == (int)MachineStatusTypeEnum.Active)
                     {
-                        <MudChip T="string" Color="Color.Success" Style="margin: 0;">Running</MudChip>
+                        <MudChip T="string" Color="Color.Success" Style="margin: 0;">Active</MudChip>
                     }
-                    else if (@context.Status == "Stopped")
+                    else if (@context.StatusId == (int)MachineStatusTypeEnum.Inactive)
                     {
-                        <MudChip T="string" Color="Color.Error" Style="margin: 0;">Stopped</MudChip>
+                        <MudChip T="string" Color="Color.Default" Style="margin: 0;">Inactive</MudChip>
+                    }
+                    else if (@context.StatusId == (int)MachineStatusTypeEnum.Idle)
+                    {
+                        <MudChip T="string" Color="Color.Warning" Style="margin: 0;">Idle</MudChip>
                     }
                     else
                     {
-                        <MudChip T="string" Color="Color.Warning" Style="margin: 0;">Idle</MudChip>
+                        <MudChip T="string" Color="Color.Error" Style="margin: 0;">Unexpected</MudChip>
                     }
                 </MudTd>
                 <MudTd DataLabel="Chain Moves/Second">@context.ChainMovesPerSecond</MudTd>

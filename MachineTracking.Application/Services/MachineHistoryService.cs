@@ -28,6 +28,8 @@ namespace MachineTracking.Application.Services
         }
         public async Task<MachineHistoryPaginatedResponse> GetMachineHistoriesAsync(MachineHistoryGetRequestDTO request)
         {
+            DateTime now = DateTime.Now;
+
             var response = await _machineHistoryRepository.GetMachineHistoriesAsync(request.MachineId);
 
             if (!string.IsNullOrEmpty(request.SearchText))
@@ -47,6 +49,11 @@ namespace MachineTracking.Application.Services
                 var take = request.PageSize;
 
                 response = response.Skip(skip).Take(take);
+            }
+
+            if(request.Time != TimeSpan.Zero)
+            {
+                response = response.Where(entry => now - entry.DataReceivedTimestamp <= request.Time);
             }
 
             return new MachineHistoryPaginatedResponse()
