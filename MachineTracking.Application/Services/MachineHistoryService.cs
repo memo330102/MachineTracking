@@ -38,13 +38,16 @@ namespace MachineTracking.Application.Services
                            item.ChainMovesPerSecond.ToString().Contains(request.SearchText, StringComparison.OrdinalIgnoreCase) ||
                            item.Status.Contains(request.SearchText, StringComparison.OrdinalIgnoreCase));
             }
+            int totalCount = 0;
+            if (request.PageNumber != 0)
+            {
+                totalCount = response.Count();
 
-            var totalCount = response.Count();
+                var skip = (request.PageNumber - 1) * request.PageSize;
+                var take = request.PageSize;
 
-            var skip = (request.PageNumber - 1) * request.PageSize;
-            var take = request.PageSize;
-
-            response = response.Skip(skip).Take(take);
+                response = response.Skip(skip).Take(take);
+            }
 
             return new MachineHistoryPaginatedResponse()
             {

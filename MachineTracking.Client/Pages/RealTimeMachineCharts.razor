@@ -1,0 +1,63 @@
+﻿@page "/realtimemachinecharts/{MachineId}"
+@using MachineTracking.Client.Shared.Helpers
+@using MachineTracking.Client.Shared.Helpers.Interfaces
+@using MachineTracking.Domain.DTOs
+@using MachineTracking.Domain.Enums
+@using MudBlazor
+@using System.Text.Json;
+@inject SignalRService SignalRService
+@inject IHttpClientProvider HttpClientProvider
+@using MachineTracking.Client.Components.MachineHistory
+
+@if (machineData.Values.Any() == true)
+{
+    <ChainMovesLineChart MachineData="machineData" />
+}
+
+@code {
+    [Parameter]
+    public string MachineId { get; set; }
+
+    private MachineHistoryPaginatedResponse data = new();
+    private IDictionary<DateTime, MachineHistoryDTO> machineData = new Dictionary<DateTime, MachineHistoryDTO>();
+    private string getMachineHistoriesEndpoint = "api/MachineHistory/GetMachineHistoriesAsync";
+
+    protected override async Task OnInitializedAsync()
+    {
+        data = await GetMachineHistoriesAsync();
+
+        SignalRService.OnMachineDataReceived += OnMachineDataReceived;
+        await SignalRService.StartAsync();
+    }
+
+    private void OnMachineDataReceived(string data)
+    {
+        var newData = JsonSerializer.Deserialize<MachineHistoryDTO>(data);
+        if (newData != null)
+        {
+            machineData.Add(newData.DataReceivedTimestamp, newData);
+            machineData = machineData.OrderByDescending(obd => obd.Key).ToDictionary();
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task<MachineHistoryPaginatedResponse> GetMachineHistoriesAsync()
+    {
+        var response = await HttpClientProvider.RequestGetByObject(getMachineHistoriesEndpoint, new MachineHistoryGetRequestDTO()
+            {
+                MachineId = MachineId,
+                PageNumber = 0,
+                PageSize = 0,
+                SearchText = ""
+            });
+
+        if (response.IsSuccessStatusCode)
+        {
+            data = await response.Content.ReadFromJsonAsync<MachineHistoryPaginatedResponse>() ?? new MachineHistoryPaginatedResponse();
+            machineData = data.MachineHistories.ToDictionary(item => item.DataReceivedTimestamp, item => item);
+        }
+
+        return data;
+    }
+}

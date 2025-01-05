@@ -37,9 +37,10 @@
 
     private void PrepareChartData()
     {
-        var data = MachineData.OrderBy(m => m.Key).ToDictionary();
-        if (MachineData != null && MachineData.Any())
+        int machineHistoryCount = MachineData.Count();
+        if (machineHistoryCount > 0)
         {
+            var data = MachineData.OrderBy(m => m.Key).ToDictionary();
             ChartSeriesData = new List<ChartSeries>
             {
                 new ChartSeries
@@ -49,6 +50,9 @@
                 }
             };
             XAxisLabels = new string[MachineData.Count()];
+            XAxisLabels[0] = MachineData.Values.First().DataReceivedTimestamp.ToString();
+            XAxisLabels[machineHistoryCount- 1] = MachineData.Values.Last().DataReceivedTimestamp.ToString();
+
             // XAxisLabels = data.MachineHistories.Select(x => x.DataReceivedTimestamp.ToString("HH:mm:ss")).ToArray();
         }
     }
