@@ -1,13 +1,13 @@
 ﻿@page "/machinedetail/{MachineId}"
-@    using MachineTracking.Client.Shared.Helpers
-@    using MachineTracking.Client.Shared.Helpers.Interfaces
-@    using MachineTracking.Domain.DTOs
-@    using MachineTracking.Domain.Enums
-@    using MudBlazor
-@    using System.Text.Json;
+@using MachineTracking.Client.Shared.Helpers
+@using MachineTracking.Client.Shared.Helpers.Interfaces
+@using MachineTracking.Domain.DTOs.MachineHistory
+@using MachineTracking.Domain.Enums
+@using MudBlazor
+@using System.Text.Json;
 @inject SignalRService SignalRService
 @inject IHttpClientProvider HttpClientProvider
-@    using MachineTracking.Client.Components.MachineHistory
+@using MachineTracking.Client.Components.MachineHistory
 
 <MudContainer Class="mud-container-max-width" MaxWidth="MaxWidth.Large" Style="padding: 16px;">
     <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Style="font-weight: bold; color: #2C3E50;">

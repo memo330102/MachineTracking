@@ -34,8 +34,12 @@ namespace MachineTracking.MessageBroker.Services
                 var topic = e.ApplicationMessage.Topic;
                 var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
 
+                _logger.Information($"Subscribed message: {payload}");
+
+                _logger.Information($"Saving message to Database: {payload}");
                 await _mqttDataService.SaveMqttMessageAsync(topic, payload, CancellationToken.None);
 
+                _logger.Information($"Sending message to the SignalR: {payload}");
                 await _hubContext.Clients.All.SendAsync(_mqttSettings.HubMethodName, payload);
             };
         }
