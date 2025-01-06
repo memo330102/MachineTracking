@@ -22,17 +22,6 @@ namespace MachineTracking.Client.Shared.Helpers
             });
         }
 
-        // Subscribe to machine data updates, passing the entire DTO
-        //public async Task SubscribeToMachineData(Func<string, Task> onMachineDataReceived)
-        //{
-        //    _hubConnection.On<string>("ReceiveMachineData", async (machineData) =>
-        //    {
-        //        await onMachineDataReceived(machineData);
-        //    });
-
-        //    await _hubConnection.StartAsync();
-        //}
-
         public async Task StartAsync()
         {
             try

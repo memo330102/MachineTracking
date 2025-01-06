@@ -30,7 +30,7 @@ namespace MachineTracking.Application.Services
                 }
 
                 machineHistory.Topic = topic;
-                machineHistory.StatusId = MapStatusToStatusId(machineHistory);
+                machineHistory.StatusId = MachineHistoryHelper.MapStatusToStatusId(machineHistory);
 
                 await _machineHistoryRepository.AddAsync(machineHistory);
                 _logger.Information($"Message processed and saved for topic '{topic}': {message}");
@@ -39,17 +39,6 @@ namespace MachineTracking.Application.Services
             {
                 _logger.Error($"MQTT Error : Unexpected error while receiving message on topic'{topic}': {message} : {ex}");
             }
-        }
-
-        private int MapStatusToStatusId(MachineHistoryDTO machineHistory)
-        {
-            return machineHistory.Status switch
-            {
-                "EngineOn" when machineHistory.ChainMovesPerSecond > 0 => (int)MachineStatusTypeEnum.Active,
-                "EngineOn" when machineHistory.ChainMovesPerSecond == 0 => (int)MachineStatusTypeEnum.Idle,
-                "EngineOff" when machineHistory.ChainMovesPerSecond <= 0 => (int)MachineStatusTypeEnum.Inactive,
-                _ => (int)MachineStatusTypeEnum.Unexpected
-            };
         }
     }
 

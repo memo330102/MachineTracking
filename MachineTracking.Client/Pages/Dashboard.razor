@@ -10,7 +10,6 @@
 @inject IHttpClientProvider HttpClientProvider
 @inject IDialogService DialogService
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mud-p-4">
     <MudGrid>
@@ -45,7 +44,7 @@
                     <MudCardContent>
                         <MudStack Spacing="2" Class="mud-mb-4">
                             <MudText Style="font-size: 1rem; color: #7F8C8D;">
-                                <strong>Status:</strong> @GetStatusChip(machine.StatusId)
+                                <strong>Status:</strong> @MachineHistoryHelper.GetStatusChip(machine.StatusId)
                             </MudText>
                             <MudText Style="font-size: 1rem; color: #7F8C8D;">
                                 <strong>Chain Moves/Second:</strong> @machine.ChainMovesPerSecond
@@ -56,7 +55,7 @@
                             <MudText Style="font-size: 1rem; color: #7F8C8D;">
                                 <strong>Data Received Date:</strong>
                                 <MudTooltip Text="@machine.DataReceivedTimestamp.ToString("yyyy-MM-dd HH:mm:ss")">
-                                    <span style="color: #34495E;">@GetRelativeTime(machine.DataReceivedTimestamp)</span>
+                                    <span style="color: #34495E;">@MachineHistoryHelper.GetRelativeTime(machine.DataReceivedTimestamp)</span>
                                     <MudIconButton Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Style="color: #7F8C8D; margin-left: 8px;" />
                                 </MudTooltip>
                             </MudText>
@@ -115,7 +114,7 @@
         var newData = JsonSerializer.Deserialize<MachineHistoryDTO>(data);
         if (newData != null)
         {
-            newData.StatusId = MapStatusToStatusId(newData);
+            newData.StatusId = newData.StatusId = MachineHistoryHelper.MapStatusToStatusId(newData);
             machineData = newData;
             if (LastestDataOfAllMachines.ContainsKey(newData.MachineId))
             {
@@ -130,7 +129,7 @@
         InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose()
+    private void Dispose()
     {
         SignalRService.OnMachineDataReceived -= OnMachineDataReceived;
     }
@@ -150,47 +149,6 @@
         return data.ToDictionary(item => item.MachineId, item => item);
     }
 
-    private RenderFragment GetStatusChip(int statusId) => builder =>
-    {
-        builder.OpenComponent<MudChip<int>>(0);
-        builder.AddAttribute(1, "Style", "margin: 0;");
-        builder.AddAttribute(2, "Color", GetChipColor(statusId));
-        builder.AddAttribute(3, "ChildContent", (RenderFragment)(chipBuilder =>
-            {
-                chipBuilder.AddContent(0, Enum.GetName(typeof(MachineStatusTypeEnum), statusId) ?? statusId.ToString());
-            }));
-        builder.CloseComponent();
-    };
-
-    private Color GetChipColor(int statusId)
-    {
-        return statusId switch
-        {
-            (int)MachineStatusTypeEnum.Active => Color.Success,
-            (int)MachineStatusTypeEnum.Inactive => Color.Default,
-            (int)MachineStatusTypeEnum.Idle => Color.Warning,
-            _ => Color.Error
-        };
-    }
-
-    public string GetRelativeTime(DateTime dataReceivedData)
-    {
-        var timeSpan = DateTime.Now - dataReceivedData;
-
-        if (timeSpan.TotalSeconds < 60)
-            return $"{(int)timeSpan.TotalSeconds} seconds ago";
-        if (timeSpan.TotalMinutes < 60)
-            return $"{(int)timeSpan.TotalMinutes} minutes ago";
-        if (timeSpan.TotalHours < 24)
-            return $"{(int)timeSpan.TotalHours} hours ago";
-        if (timeSpan.TotalDays < 30)
-            return $"{(int)timeSpan.TotalDays} days ago";
-        if (timeSpan.TotalDays < 365)
-            return $"{(int)(timeSpan.TotalDays / 30)} months ago";
-
-        return $"{(int)(timeSpan.TotalDays / 365)} years ago";
-    }
-
     private void OpenDetailsDialog(string machineId)
     {
         var parameters = new DialogParameters
@@ -207,29 +165,11 @@
         DialogService.Show<MachineHistoryList>($"📜 Past Activity of Machine {machineId}", parameters, options);
     }
 
-    private void OpenMachineDetailPage(string machineId)
-    {
-        var url = $"/machinedetail/{machineId}";
-
-        NavigationManager.NavigateTo(url);
-    }
-
     private void ShowLineChart(string machineId)
     {
         var url = $"/realtimemachinecharts/{machineId}";
 
         NavigationManager.NavigateTo(url);
-    }
-
-    private int MapStatusToStatusId(MachineHistoryDTO machineHistory)
-    {
-        return machineHistory.Status switch
-        {
-            "EngineOn" when machineHistory.ChainMovesPerSecond > 0 => (int)MachineStatusTypeEnum.Active,
-            "EngineOn" when machineHistory.ChainMovesPerSecond == 0 => (int)MachineStatusTypeEnum.Idle,
-            "EngineOff" when machineHistory.ChainMovesPerSecond <= 0 => (int)MachineStatusTypeEnum.Inactive,
-            _ => (int)MachineStatusTypeEnum.Unexpected
-        };
     }
 
     private async Task OnSwitchChanged(bool value)
@@ -252,31 +192,26 @@
 <style>
     .custom-switch {
         width: 100%;
-        height: 50px;
+        height: 20px;
     }
-
-        /* Style the MudSwitch thumb (the circular button) */
         .custom-switch .mud-switch-thumb {
-            background-color: #fff; /* Color of the thumb */
-            border: 2px solid #3f51b5; /* Color of the border around the thumb */
-            transition: transform 0.3s ease; /* Smooth transition for the thumb movement */
+            background-color: #fff; 
+            border: 2px solid #3f51b5; 
+            transition: transform 0.3s ease; 
         }
 
-        /* When the switch is ON (active state), apply a different color */
         .custom-switch.mud-switch-checked .mud-switch-thumb {
-            background-color: #3f51b5; /* Color of the thumb when ON */
-            border-color: #fff; /* Border color for the thumb when ON */
+            background-color: #3f51b5; 
+            border-color: #fff; 
         }
 
-        /* Style the background of the switch when ON */
         .custom-switch.mud-switch-checked .mud-switch-track {
-            background-color: #3f51b5; /* Color of the track when ON */
-            border-color: #3f51b5; /* Border color when ON */
+            background-color: #3f51b5; 
+            border-color: #3f51b5;
         }
 
-        /* Style the background of the switch when OFF */
         .custom-switch .mud-switch-track {
-            background-color: #e0e0e0; /* Color of the track when OFF */
-            border-color: #c5c5c5; /* Border color when OFF */
+            background-color: #e0e0e0; 
+            border-color: #c5c5c5; 
         }
 </style> 

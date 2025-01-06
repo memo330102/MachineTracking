@@ -1,0 +1,67 @@
+﻿@using MudBlazor
+@using MachineTracking.Domain.DTOs
+@using MachineTracking.Domain.Enums
+@using MudBlazor.Components.Chart.Models
+
+@code {
+    [Parameter]
+    public IDictionary<DateTime, MachineHistoryDTO> MachineData { get; set; } = new Dictionary<DateTime, MachineHistoryDTO>();
+    private List<StatusItem> StatusData { get; set; } 
+    protected override void OnParametersSet()
+    {
+        PrepareChartData();
+    }
+
+    private void PrepareChartData()
+    {
+        StatusData = new List<StatusItem>();
+
+        int activeCount = MachineData.Values.Where(s => s.StatusId == (int)MachineStatusTypeEnum.Active).Count();
+        int inactiveCount = MachineData.Values.Where(s => s.StatusId == (int)MachineStatusTypeEnum.Inactive).Count();
+        int idleCount = MachineData.Values.Where(s => s.StatusId == (int)MachineStatusTypeEnum.Idle).Count();
+        int unexpectedCount = MachineData.Values.Where(s => s.StatusId == (int)MachineStatusTypeEnum.Unexpected).Count();
+
+        StatusData.Add(new StatusItem { Label = "Active", Value = 156, Color = Color.Success });
+        StatusData.Add(new StatusItem { Label = "Inactive", Value = 100, Color = Color.Default });
+        StatusData.Add(new StatusItem { Label = "Idle", Value = idleCount, Color = Color.Warning });
+        StatusData.Add(new StatusItem { Label = "Unexpected", Value = unexpectedCount, Color = Color.Error });
+
+        double maxValue = StatusData.Max(item => item.Value);
+
+        if (maxValue > 100)
+        {
+            StatusData = StatusData
+            .Select(item => new StatusItem
+                {
+                    Label = item.Label,
+                    Value = maxValue > 0 ? (item.Value / maxValue) * 100 : 0,
+                    Color = item.Color
+                }).ToList();
+        }
+    }
+
+    public class StatusItem
+    {
+        public string Label { get; set; }
+        public double Value { get; set; }
+        public Color Color { get; set; }
+    }
+}
+<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Style="font-weight: bold; color: #2C3E50;">
+        📊 Status Changes Chart
+    </MudText>
+    <MudCard>
+        <MudGrid>
+            @foreach (var item in StatusData)
+            {
+                <MudItem xs="12">
+                    <MudPaper Class="pa-2">
+                        <MudText Typo="Typo.subtitle2">@item.Label</MudText>
+                        <MudProgressLinear Value="@item.Value" Color="@item.Color" Height="20" />
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudCard>
+</MudContainer>
