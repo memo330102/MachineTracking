@@ -1,5 +1,5 @@
-﻿using MachineTracking.Domain.DTOs;
-using MachineTracking.Domain.Enums;
+﻿using MachineTracking.Application.Helpers;
+using MachineTracking.Domain.DTOs.MachineHistory;
 using MachineTracking.Domain.Interfaces.Application;
 using MachineTracking.Domain.Interfaces.Infrastructure;
 using Serilog;

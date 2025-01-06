@@ -1,5 +1,6 @@
 using MachineTracking.Application.MiddleWare;
 using MachineTracking.Application.Services;
+using MachineTracking.Domain.DTOs.MQTT;
 using MachineTracking.Domain.Interfaces.Application;
 using MachineTracking.Domain.Interfaces.Infrastructure;
 using MachineTracking.Infrastructure.Connections.Dapper;
@@ -36,6 +37,8 @@ builder.Services.AddTransient<IMachineHistoryRepository, MachineHistoryRepositor
 builder.Services.AddSingleton<DbConnections>();
 builder.Services.AddSingleton<IMqttClient>(new MqttFactory().CreateMqttClient());
 builder.Services.AddHostedService<MqttBackendService>();
+
+builder.Services.Configure<MqttSettings>(builder.Configuration.GetSection("MQTTSettings"));
 
 builder.Services.AddSignalR();
 

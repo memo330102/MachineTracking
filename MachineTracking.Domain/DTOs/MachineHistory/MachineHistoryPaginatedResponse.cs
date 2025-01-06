@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MachineTracking.Domain.DTOs
+﻿namespace MachineTracking.Domain.DTOs.MachineHistory
 {
     public class MachineHistoryPaginatedResponse
     {

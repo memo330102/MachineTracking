@@ -1,4 +1,4 @@
-﻿using MachineTracking.Domain.DTOs;
+﻿using MachineTracking.Domain.DTOs.MachineHistory;
 using MachineTracking.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MachineTracking.Application
+namespace MachineTracking.Application.Helpers
 {
     public static class MachineHistoryHelper
     {

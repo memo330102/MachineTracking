@@ -3,10 +3,11 @@ using MQTTnet;
 using MQTTnet.Client;
 using System.Text;
 using Microsoft.Extensions.Hosting;
-using MachineTracking.Domain.DTOs;
-using Newtonsoft.Json;
 using MachineTracking.MessageBroker.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using MachineTracking.Domain.DTOs.MQTT;
+using Microsoft.Extensions.Options;
+using Serilog;
 
 namespace MachineTracking.MessageBroker.Services
 {
@@ -15,17 +16,19 @@ namespace MachineTracking.MessageBroker.Services
         private readonly IMqttClient _mqttClient;
         private readonly IMqttDataService _mqttDataService;
         private readonly IHubContext<MachineDataHub> _hubContext;
-
-        private const string Topic = "gotecgroup/machine";
+        private readonly MqttSettings _mqttSettings;
         private CancellationTokenSource _cancellationTokenSource;
-
-        public MqttBackendService(IMqttClient mqttClient, IMqttDataService mqttDataService, IHubContext<MachineDataHub> hubContext)
+        private readonly ILogger _logger;
+        public MqttBackendService(IMqttClient mqttClient, IMqttDataService mqttDataService, 
+                            IHubContext<MachineDataHub> hubContext, IOptions<MqttSettings> options, ILogger logger)
         {
             _mqttClient = mqttClient;
             _mqttDataService = mqttDataService;
             _hubContext = hubContext;
+            _mqttSettings = options.Value;
+            _cancellationTokenSource = new CancellationTokenSource();
+            _logger = logger;
 
-            // Attach message handler
             _mqttClient.ApplicationMessageReceivedAsync += async e =>
             {
                 var topic = e.ApplicationMessage.Topic;
@@ -33,7 +36,7 @@ namespace MachineTracking.MessageBroker.Services
 
                 await _mqttDataService.SaveMqttMessageAsync(topic, payload, CancellationToken.None);
 
-                await _hubContext.Clients.All.SendAsync("ReceiveMachineData", payload);
+                await _hubContext.Clients.All.SendAsync(_mqttSettings.HubMethodName, payload);
             };
         }
 
@@ -43,40 +46,33 @@ namespace MachineTracking.MessageBroker.Services
             {
                 _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-                // Configure the client options
                 var mqttOptions = new MqttClientOptionsBuilder()
-                    .WithClientId("BackendService")
-                    .WithTcpServer("localhost") // Replace with your broker address
+                    .WithClientId(_mqttSettings.ClientId)
+                    .WithTcpServer(_mqttSettings.TcpServer) 
                     .Build();
-                // Connect to the MQTT broker
-                Console.WriteLine("Connecting to MQTT broker...");
+
+                _logger.Information($"Connecting to MQTT broker...");
                 await _mqttClient.ConnectAsync(mqttOptions, cancellationToken);
 
-                // Subscribe to the topic
-                Console.WriteLine($"Subscribing to topic: {Topic}");
-                await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(Topic).Build(), cancellationToken);
-
-                Console.WriteLine("Listening for MQTT messages...");
+                _logger.Information($"Subscribing to topic: {_mqttSettings.Topic}");
+                await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(_mqttSettings.Topic).Build(), cancellationToken);
+                _logger.Information("Listening for MQTT messages...");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in MQTT background service: {ex.Message}");
+                _logger.Error($"Error in MQTT background service: {ex.Message}");
             }
-
-            // Keep the service running
-            //await Task.Delay(Timeout.Infinite, cancellationToken);
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             _cancellationTokenSource?.Cancel();
 
-            // Disconnect the MQTT client asynchronously
             if (_mqttClient.IsConnected)
             {
-                Console.WriteLine("Disconnecting from MQTT broker...");
+                _logger.Information("Disconnecting from MQTT broker...");
                 await _mqttClient.DisconnectAsync(new MqttClientDisconnectOptions(), cancellationToken);
-                Console.WriteLine("MQTT client disconnected.");
+                _logger.Information("MQTT client disconnected.");
             }
         }
     }

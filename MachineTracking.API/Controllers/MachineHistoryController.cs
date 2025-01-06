@@ -1,4 +1,4 @@
-﻿using MachineTracking.Domain.DTOs;
+﻿using MachineTracking.Domain.DTOs.MachineHistory;
 using MachineTracking.Domain.Interfaces.Application;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
