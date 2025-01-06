@@ -1,16 +1,34 @@
 ﻿using MachineTracking.Domain.DTOs.MachineHistory;
 using MachineTracking.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using MachineTracking.Domain.Interfaces.Application;
+using Serilog;
 
 namespace MachineTracking.Application.Helpers
 {
-    public static class MachineHistoryHelper
+    public class MachineHistoryHelper : IMachineHistoryHelper
     {
-        public static int MapStatusToStatusId(MachineHistoryDTO machineHistory)
+        private readonly ILogger _logger;
+
+        public MachineHistoryHelper(ILogger logger)
+        {
+            _logger = logger;
+        }
+        public bool IsValidPayload(string payload)
+        {
+            if (string.IsNullOrEmpty(payload))
+            {
+                _logger.Warning("Payload is empty or null.");
+                return false;
+            }
+            if (!payload.StartsWith("{") || !payload.EndsWith("}"))
+            {
+                _logger.Warning("Payload is not a valid JSON.");
+                return false;
+            }
+            return true;
+        }
+
+        public int MapStatusToStatusId(MachineHistoryDTO machineHistory)
         {
             return machineHistory.Status switch
             {

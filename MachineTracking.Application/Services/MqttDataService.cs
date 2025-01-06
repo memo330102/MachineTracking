@@ -11,10 +11,12 @@ namespace MachineTracking.Application.Services
     {
         private readonly IMachineHistoryRepository _machineHistoryRepository;
         private readonly ILogger _logger;
-        public MqttDataService(IMachineHistoryRepository machineHistoryRepository, ILogger logger)
+        IMachineHistoryHelper _machineHistoryHelper;
+        public MqttDataService(IMachineHistoryRepository machineHistoryRepository, ILogger logger, IMachineHistoryHelper machineHistoryHelper)
         {
             _machineHistoryRepository = machineHistoryRepository;
             _logger = logger;
+            _machineHistoryHelper = machineHistoryHelper;
         }
 
         public async Task SaveMqttMessageAsync(string topic, string message, CancellationToken cancellationToken)
@@ -30,7 +32,7 @@ namespace MachineTracking.Application.Services
                 }
 
                 machineHistory.Topic = topic;
-                machineHistory.StatusId = MachineHistoryHelper.MapStatusToStatusId(machineHistory);
+                machineHistory.StatusId = _machineHistoryHelper.MapStatusToStatusId(machineHistory);
 
                 await _machineHistoryRepository.AddAsync(machineHistory);
                 _logger.Information($"Message processed and saved for topic '{topic}': {message}");

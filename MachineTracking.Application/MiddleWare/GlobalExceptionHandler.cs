@@ -19,7 +19,6 @@ namespace MachineTracking.Application.MiddleWare
         {
             try
             {
-                //_logger.Error("An unexpected error occurred.");
                 await _next(context);
             }
             catch (Exception ex)
@@ -68,7 +67,9 @@ namespace MachineTracking.Application.MiddleWare
                 Message = message,
                 Detailed = exception.Message
             };
-            _logger.Error("Error: {Response}", JsonConvert.SerializeObject(response));
+
+            _logger.Error($"Error: {response}");
+
             await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
         }
     }

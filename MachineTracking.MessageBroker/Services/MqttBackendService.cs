@@ -19,7 +19,8 @@ namespace MachineTracking.MessageBroker.Services
         private readonly MqttSettings _mqttSettings;
         private CancellationTokenSource _cancellationTokenSource;
         private readonly ILogger _logger;
-        public MqttBackendService(IMqttClient mqttClient, IMqttDataService mqttDataService, 
+        IMachineHistoryHelper _machineHistoryHelper;
+        public MqttBackendService(IMqttClient mqttClient, IMqttDataService mqttDataService, IMachineHistoryHelper machineHistoryHelper,
                             IHubContext<MachineDataHub> hubContext, IOptions<MqttSettings> options, ILogger logger)
         {
             _mqttClient = mqttClient;
@@ -28,18 +29,25 @@ namespace MachineTracking.MessageBroker.Services
             _mqttSettings = options.Value;
             _cancellationTokenSource = new CancellationTokenSource();
             _logger = logger;
+            _machineHistoryHelper = machineHistoryHelper;
 
             _mqttClient.ApplicationMessageReceivedAsync += async e =>
             {
                 var topic = e.ApplicationMessage.Topic;
                 var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
 
+                if (!_machineHistoryHelper.IsValidPayload(payload))
+                {
+                    _logger.Warning($"Invalid payload received on topic {topic}: {payload}");
+                    return;
+                }
+
                 _logger.Information($"Subscribed message: {payload}");
 
                 _logger.Information($"Saving message to Database: {payload}");
                 await _mqttDataService.SaveMqttMessageAsync(topic, payload, CancellationToken.None);
 
-                _logger.Information($"Sending message to the SignalR: {payload}");
+                _logger.Information($"Sending message to the SignalR Clients: {payload}");
                 await _hubContext.Clients.All.SendAsync(_mqttSettings.HubMethodName, payload);
             };
         }
