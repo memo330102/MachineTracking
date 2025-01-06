@@ -27,7 +27,7 @@ namespace MachineTracking.Application.Services
 
                 if (machineHistory == null)
                 {
-                    _logger.Error($"MQTT Error : Invalid message received on topic '{topic}': {message}");
+                    _logger.Error($"Invalid message received on topic '{topic}': {message}");
                     return;
                 }
 
@@ -35,11 +35,11 @@ namespace MachineTracking.Application.Services
                 machineHistory.StatusId = _machineHistoryHelper.MapStatusToStatusId(machineHistory);
 
                 await _machineHistoryRepository.AddAsync(machineHistory);
-                _logger.Information($"Message processed and saved for topic '{topic}': {message}");
+                _logger.Information($"Message processed and saved for topic {topic}: {message}");
             }
             catch (Exception ex)
             {
-                _logger.Error($"MQTT Error : Unexpected error while receiving message on topic'{topic}': {message} : {ex}");
+                _logger.Error($"Unexpected error while parsing message on topic {topic}: {message} : {ex}");
             }
         }
     }

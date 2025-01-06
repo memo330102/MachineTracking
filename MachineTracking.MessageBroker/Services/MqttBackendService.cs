@@ -80,8 +80,6 @@ namespace MachineTracking.MessageBroker.Services
                         cancellationToken
                     );
                 }
-                //_logger.Information($"Subscribing to topic: {_mqttSettings.Topic}");
-                //await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(_mqttSettings.Topic).Build(), cancellationToken);
                
                 _logger.Information("Listening for MQTT messages...");
             }

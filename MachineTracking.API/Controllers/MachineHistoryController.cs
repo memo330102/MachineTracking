@@ -16,13 +16,6 @@ namespace MachineTracking.API.Controllers
             _machineHistoryService = machineHistoryService;
         }
 
-        [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAll()
-        {
-            var response = await _machineHistoryService.GetAllAsync();
-            return Ok(response);
-        }
-
         [HttpGet("GetLastestDataOfAllMachinesAsync")]
         public async Task<IActionResult> GetLastestDataOfAllMachinesAsync()
         {

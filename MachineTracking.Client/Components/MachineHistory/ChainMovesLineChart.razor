@@ -49,9 +49,9 @@
                     Data = data.Values.Select(x => x.ChainMovesPerSecond).ToArray()
                 }
             };
-            XAxisLabels = new string[MachineData.Count()];
-            XAxisLabels[0] = MachineData.Values.First().DataReceivedTimestamp.ToString();
-            XAxisLabels[machineHistoryCount- 1] = MachineData.Values.Last().DataReceivedTimestamp.ToString();
+            XAxisLabels = new string[data.Count()];
+            XAxisLabels[0] = data.Values.First().DataReceivedTimestamp.ToString();
+            XAxisLabels[machineHistoryCount - 1] = data.Values.Last().DataReceivedTimestamp.ToString();
 
             // XAxisLabels = data.MachineHistories.Select(x => x.DataReceivedTimestamp.ToString("HH:mm:ss")).ToArray();
         }
