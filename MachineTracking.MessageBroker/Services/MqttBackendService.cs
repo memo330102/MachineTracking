@@ -33,22 +33,29 @@ namespace MachineTracking.MessageBroker.Services
 
             _mqttClient.ApplicationMessageReceivedAsync += async e =>
             {
-                var topic = e.ApplicationMessage.Topic;
-                var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-
-                if (!_machineHistoryHelper.IsValidPayload(payload))
+                try
                 {
-                    _logger.Warning($"Invalid payload received on topic {topic}: {payload}");
-                    return;
+                    var topic = e.ApplicationMessage.Topic;
+                    var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+
+                    if (!_machineHistoryHelper.IsValidPayload(payload))
+                    {
+                        _logger.Warning($"Invalid payload received on topic {topic}: {payload}");
+                        return;
+                    }
+
+                    _logger.Information($"Subscribed message: {payload}");
+
+                    _logger.Information($"Saving message to Database: {payload}");
+                    await _mqttDataService.SaveMqttMessageAsync(topic, payload, CancellationToken.None);
+
+                    _logger.Information($"Sending message to the SignalR Clients: {payload}");
+                    await _hubContext.Clients.All.SendAsync(_mqttSettings.HubMethodName, payload);
                 }
-
-                _logger.Information($"Subscribed message: {payload}");
-
-                _logger.Information($"Saving message to Database: {payload}");
-                await _mqttDataService.SaveMqttMessageAsync(topic, payload, CancellationToken.None);
-
-                _logger.Information($"Sending message to the SignalR Clients: {payload}");
-                await _hubContext.Clients.All.SendAsync(_mqttSettings.HubMethodName, payload);
+                catch (Exception ex)
+                {
+                    _logger.Error($"MQTT Error: {ex.Message}. Payload: {Encoding.UTF8.GetString(e.ApplicationMessage.Payload)}");
+                }
             };
         }
 
@@ -65,9 +72,17 @@ namespace MachineTracking.MessageBroker.Services
 
                 _logger.Information($"Connecting to MQTT broker...");
                 await _mqttClient.ConnectAsync(mqttOptions, cancellationToken);
-
-                _logger.Information($"Subscribing to topic: {_mqttSettings.Topic}");
-                await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(_mqttSettings.Topic).Build(), cancellationToken);
+                foreach (var topic in _mqttSettings.Topics)
+                {
+                    _logger.Information($"Subscribing to topic: {topic}");
+                    await _mqttClient.SubscribeAsync(
+                        new MqttTopicFilterBuilder().WithTopic(topic).Build(),
+                        cancellationToken
+                    );
+                }
+                //_logger.Information($"Subscribing to topic: {_mqttSettings.Topic}");
+                //await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(_mqttSettings.Topic).Build(), cancellationToken);
+               
                 _logger.Information("Listening for MQTT messages...");
             }
             catch (Exception ex)
