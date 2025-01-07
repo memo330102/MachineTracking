@@ -8,6 +8,7 @@
 @inject SignalRService SignalRService
 @inject IHttpClientProvider HttpClientProvider
 @using MachineTracking.Client.Components.MachineHistory
+@inject IConfiguration Configuration
 
 <MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
     <MudGrid>
@@ -48,7 +49,6 @@ else
 
     private MachineHistoryPaginatedResponse data = new();
     private IDictionary<DateTime, MachineHistoryDTO> machineData = new Dictionary<DateTime, MachineHistoryDTO>();
-    private string getMachineHistoriesEndpoint = "api/v1/MachineHistory/GetMachineHistoriesAsync";
     private MachineLineChartTimeEnum selectedTimeRange = MachineLineChartTimeEnum.None;
     private TimeSpan timeRange = TimeSpan.Zero;
     protected override async Task OnInitializedAsync()
@@ -74,7 +74,7 @@ else
 
     private async Task<MachineHistoryPaginatedResponse> GetMachineHistoriesAsync()
     {
-        var response = await HttpClientProvider.RequestGetByObject(getMachineHistoriesEndpoint, new MachineHistoryGetRequestDTO()
+        var response = await HttpClientProvider.RequestGetByObject(Configuration["ApiEndpoints:MachineHistoriesUrl"] ?? "", new MachineHistoryGetRequestDTO()
             {
                 MachineId = MachineId,
                 PageNumber = 0,

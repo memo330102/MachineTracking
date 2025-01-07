@@ -6,6 +6,7 @@
 @using MachineTracking.Domain.DTOs.MachineHistory;
 @inject SignalRService SignalRService
 @inject IHttpClientProvider HttpClientProvider
+@inject IConfiguration Configuration
 
 <MudContainer Class="mud-container-max-width" MaxWidth="MaxWidth.Large" Style="padding: 16px;">
     <MudCard Class="mud-elevation-4" Style="padding: 16px;">
@@ -68,7 +69,6 @@
     public string MachineId { get; set; }
 
     private MachineHistoryPaginatedResponse data = new();
-    private string getMachineHistoriesEndpoint = "api/v1/MachineHistory/GetMachineHistoriesAsync";
     private string searchText = "";
     private int totalItems = 25;
     private int pageNumber = 1;
@@ -80,7 +80,7 @@
 
     private async Task<MachineHistoryPaginatedResponse> GetMachineHistoriesAsync()
     {
-        var response = await HttpClientProvider.RequestGetByObject(getMachineHistoriesEndpoint, new MachineHistoryGetRequestDTO()
+        var response = await HttpClientProvider.RequestGetByObject(Configuration["ApiEndpoints:MachineHistoriesUrl"] ?? "", new MachineHistoryGetRequestDTO()
             {
                 MachineId = MachineId,
                 PageNumber = pageNumber,
