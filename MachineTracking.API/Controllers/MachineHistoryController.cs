@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MachineTracking.API.Controllers
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class MachineHistoryController : ControllerBase
     {
@@ -26,8 +27,8 @@ namespace MachineTracking.API.Controllers
         [HttpGet("GetById")]
         public async Task<IActionResult> GetById(int id)
         {
-            var record = await _machineHistoryService.GetByIdAsync(id);
-            return record is not null ? Ok(record) : NotFound();
+            var response = await _machineHistoryService.GetByIdAsync(id);
+            return response is not null ? Ok(response) : NotFound();
         }
 
         [HttpGet("GetMachineHistoriesAsync")]

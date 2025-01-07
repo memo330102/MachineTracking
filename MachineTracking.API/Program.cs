@@ -1,3 +1,4 @@
+using MachineTracking.Application.Configurations;
 using MachineTracking.Application.Helpers;
 using MachineTracking.Application.MiddleWare;
 using MachineTracking.Application.Services;
@@ -9,6 +10,7 @@ using MachineTracking.Infrastructure.Helpers;
 using MachineTracking.Infrastructure.Repositories;
 using MachineTracking.MessageBroker.Hubs;
 using MachineTracking.MessageBroker.Services;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using MQTTnet;
 using MQTTnet.Client;
 using Serilog;
@@ -54,8 +56,21 @@ builder.Services.AddSingleton(Log.Logger);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
+#region Services.Swagger.ApiVersioning
+builder.Services.AddApiVersioning(o =>
+{
+    o.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+    o.AssumeDefaultVersionWhenUnspecified = true;
+    o.ReportApiVersions = true;
+});
+builder.Services.AddVersionedApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+});
 builder.Services.AddSwaggerGen();
+builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
+#endregion
 
 var app = builder.Build();
 
@@ -67,8 +82,15 @@ app.MapHub<MachineDataHub>(builder.Configuration["Hubs:MachineHub"]);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    var apiVersionDescriptionProvider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
+        {
+            options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", "Version: " + description.GroupName.ToUpperInvariant());
+        }
+    });
 }
 
 app.UseHttpsRedirection();

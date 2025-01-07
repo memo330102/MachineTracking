@@ -79,7 +79,7 @@
 
     private MachineHistoryPaginatedResponse data = new();
     private IDictionary<DateTime, MachineHistoryDTO> machineData = new Dictionary<DateTime, MachineHistoryDTO>();
-    private string getMachineHistoriesEndpoint = "api/MachineHistory/GetMachineHistoriesAsync";
+    private string getMachineHistoriesEndpoint = "api/v1/MachineHistory/GetMachineHistoriesAsync";
     private string searchText = "";
     private int totalItems = 25;
     private int pageNumber = 1;

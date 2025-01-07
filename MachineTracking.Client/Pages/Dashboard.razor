@@ -99,7 +99,7 @@
 @code {
     private MachineHistoryDTO machineData;
     private IDictionary<string, MachineHistoryDTO> LastestDataOfAllMachines = new Dictionary<string, MachineHistoryDTO>();
-    private string getLastestDataOfAllMachinesAsyncEndpoint = "api/MachineHistory/GetLastestDataOfAllMachinesAsync";
+    private string getLastestDataOfAllMachinesAsyncEndpoint = "api/v1/MachineHistory/GetLastestDataOfAllMachinesAsync";
     public bool activeOnly { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
