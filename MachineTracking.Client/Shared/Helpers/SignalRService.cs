@@ -1,6 +1,4 @@
-﻿using MachineTracking.Domain.DTOs;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR.Client;
 
 namespace MachineTracking.Client.Shared.Helpers
 {
@@ -8,18 +6,23 @@ namespace MachineTracking.Client.Shared.Helpers
     {
         private readonly HubConnection _hubConnection;
         public event Action<string> OnMachineDataReceived;
-
-        public SignalRService()
+        private IConfiguration _configuration;
+        public SignalRService(IConfiguration configuration)
         {
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+
+            var hubURL = $"{_configuration["ApiBaseUrl"]}{_configuration["SignalRSettings:HubName"]}";
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7100/machinedatahub")
+                .WithUrl(hubURL)
                 .WithAutomaticReconnect()
                 .Build();
 
-            _hubConnection.On<string>("ReceiveMachineData", data =>
+            string hubMethodName = _configuration["SignalRSettings:HubMethodName"] ?? "";
+
+            if (!string.IsNullOrEmpty(hubMethodName))
             {
-                OnMachineDataReceived?.Invoke(data);
-            });
+                _hubConnection.On<string>(hubMethodName, data => OnMachineDataReceived?.Invoke(data));
+            }
         }
 
         public async Task StartAsync()
