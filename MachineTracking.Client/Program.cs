@@ -1,9 +1,8 @@
 using MachineTracking.Client;
 using MachineTracking.Client.Shared.Helpers;
-using MachineTracking.Client.Shared.Helpers.Interfaces;
+using MachineTracking.Domain.Interfaces.Client;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
 using System.Net.Http.Json;
 
@@ -19,7 +18,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(settings
 
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-builder.Services.AddSingleton<SignalRService>();
+builder.Services.AddSingleton<ISignalRService,SignalRService>();
 builder.Services.AddScoped<IHttpClientProvider, HttpClientProvider>();
 
 await builder.Build().RunAsync();

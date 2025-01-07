@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using MachineTracking.Domain.Interfaces.Client;
 
 namespace MachineTracking.Client.Shared.Helpers
 {
-    public class SignalRService
+    public class SignalRService : ISignalRService
     {
         private readonly HubConnection _hubConnection;
-        public event Action<string> OnMachineDataReceived;
         private IConfiguration _configuration;
+
+        public event Action<string> OnMachineDataReceived;
+
         public SignalRService(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));

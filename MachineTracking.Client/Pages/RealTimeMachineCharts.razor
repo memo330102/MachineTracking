@@ -1,11 +1,11 @@
 ﻿@page "/realtimemachinecharts/{MachineId}"
 @using MachineTracking.Client.Shared.Helpers
-@using MachineTracking.Client.Shared.Helpers.Interfaces
 @using MachineTracking.Domain.DTOs.MachineHistory
 @using MachineTracking.Domain.Enums
+@using MachineTracking.Domain.Interfaces.Client
 @using MudBlazor
 @using System.Text.Json;
-@inject SignalRService SignalRService
+@inject ISignalRService SignalRService
 @inject IHttpClientProvider HttpClientProvider
 @using MachineTracking.Client.Components.MachineHistory
 @inject IConfiguration Configuration

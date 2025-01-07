@@ -1,12 +1,12 @@
 ﻿@page "/"
 @using MachineTracking.Client.Shared.Helpers
-@using MachineTracking.Client.Shared.Helpers.Interfaces
 @using MachineTracking.Client.Components.MachineHistory
 @using MachineTracking.Domain.DTOs.MachineHistory
+@using MachineTracking.Domain.Interfaces.Client
 @using MachineTracking.Domain.Enums
 @using MudBlazor
 @using System.Text.Json;
-@inject SignalRService SignalRService
+@inject ISignalRService SignalRService
 @inject IHttpClientProvider HttpClientProvider
 @inject IDialogService DialogService
 @inject NavigationManager NavigationManager
@@ -97,7 +97,7 @@
 <ChainMovesBarChart MachineData="LastestDataOfAllMachines" />
 
 @code {
-    private MachineHistoryDTO machineData;
+    private MachineHistoryDTO machineData = new MachineHistoryDTO();
     private IDictionary<string, MachineHistoryDTO> LastestDataOfAllMachines = new Dictionary<string, MachineHistoryDTO>();
     public bool activeOnly { get; set; } = false;
 

@@ -1,4 +1,10 @@
-﻿namespace MachineTracking.Client.Shared.Helpers.Interfaces
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace MachineTracking.Domain.Interfaces.Client
 {
     public interface IHttpClientProvider
     {
