@@ -2,6 +2,17 @@
 @using MachineTracking.Domain.DTOs.MachineHistory
 @using MudBlazor.Components.Chart.Models
 
+<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Style="font-weight: bold; color: #2C3E50;">
+        ⚡ Real-Time Machine Speed Comparison
+    </MudText>
+    <MudCard>
+        <MudPaper Class="pa-4">
+            <MudChart ChartType="ChartType.Bar" T="double" XAxisLabels="@XAxisLabels" ChartSeries="@ChartSeriesData" Height="400px" Width="700px" />
+        </MudPaper>
+    </MudCard>
+</MudContainer>
+
 @code {
     [Parameter]
     public IDictionary<string, MachineHistoryDTO> MachineData { get; set; } = new Dictionary<string, MachineHistoryDTO>();
@@ -28,13 +39,3 @@
 
     }
 }
-<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
-    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Style="font-weight: bold; color: #2C3E50;">
-        📊 Machine Speed Performance
-    </MudText>
-    <MudCard>
-        <MudPaper Class="pa-4">
-            <MudChart ChartType="ChartType.Bar" T="double" XAxisLabels="@XAxisLabels" ChartSeries="@ChartSeriesData" Height="400px" Width="700px" />
-        </MudPaper>
-    </MudCard>
-</MudContainer>

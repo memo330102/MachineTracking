@@ -12,20 +12,27 @@
 @inject NavigationManager NavigationManager
 @inject IConfiguration Configuration
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mud-p-4">
-    <MudGrid>
-        <MudItem xs="12" sm="8" lg="8"></MudItem>
-        <MudItem xs="12" sm="4" lg="4">
-            <MudPaper Elevation="4" Class="p-4 rounded-lg">
-                <MudText Typo="Typo.h6" Align="Align.Start" Color="Color.Primary" Class="mb-3">Show Active Machines Only</MudText>
-                <MudSwitch T="bool" Color="Color.Primary"
-                           ValueChanged="OnSwitchChanged" Class="custom-switch" />
-            </MudPaper>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mud-mb-4">
+    <MudGrid Spacing="3">
+        <MudItem xs="12" sm="8" lg="8">
         </MudItem>
+        <MudItem xs="12" sm="4" lg="4">
+            <MudCard Elevation="6" Class="p-3 rounded-lg">
+                <MudCardContent>
+                    <MudStack Spacing="2">
 
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                            <MudText Typo="Typo.h6" Align="Align.Start" Color="Color.Primary" Class="mb-2">
+                                Show Active Machines Only
+                            </MudText>
+                            <MudSwitch T="bool" Color="Color.Primary" ValueChanged="OnSwitchChanged" />
+                        </MudStack>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
     </MudGrid>
-</MudContainer>
-<MudContainer MaxWidth="MaxWidth.Large" Class="mud-p-4">
+</MudContainer><MudContainer MaxWidth="MaxWidth.Large" Class="mud-p-4">
     <MudCard Class="mud-elevation-4 mud-p-4" Style="border-radius: 12px;">
         <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Class="mud-mb-4"
                  Style="font-weight: bold; color: #2C3E50;">
@@ -188,31 +195,3 @@
         await InvokeAsync(StateHasChanged);
     }
 }
-
-<style>
-    .custom-switch {
-        width: 100%;
-        height: 20px;
-    }
-
-        .custom-switch .mud-switch-thumb {
-            background-color: #fff;
-            border: 2px solid #3f51b5;
-            transition: transform 0.3s ease;
-        }
-
-        .custom-switch.mud-switch-checked .mud-switch-thumb {
-            background-color: #3f51b5;
-            border-color: #fff;
-        }
-
-        .custom-switch.mud-switch-checked .mud-switch-track {
-            background-color: #3f51b5;
-            border-color: #3f51b5;
-        }
-
-        .custom-switch .mud-switch-track {
-            background-color: #e0e0e0;
-            border-color: #c5c5c5;
-        }
-</style> 
