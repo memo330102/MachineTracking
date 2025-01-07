@@ -3,6 +3,25 @@
 @using MachineTracking.Domain.Enums
 @using MudBlazor.Components.Chart.Models
 
+<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Style="font-weight: bold; color: #2C3E50;">
+        🚦 Real-Time Status Updates for Machines
+    </MudText>
+    <MudCard>
+        <MudGrid>
+            @foreach (var item in StatusData)
+            {
+                <MudItem xs="12">
+                    <MudPaper Class="pa-2">
+                        <MudText Typo="Typo.subtitle2">@item.Label</MudText>
+                        <MudProgressLinear Value="@item.Value" Color="@item.Color" Height="20" />
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudCard>
+</MudContainer>
+
 @code {
     [Parameter]
     public IDictionary<DateTime, MachineHistoryDTO> MachineData { get; set; } = new Dictionary<DateTime, MachineHistoryDTO>();
@@ -47,21 +66,3 @@
         public Color Color { get; set; }
     }
 }
-<MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
-    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Style="font-weight: bold; color: #2C3E50;">
-        📊 Status Changes Chart
-    </MudText>
-    <MudCard>
-        <MudGrid>
-            @foreach (var item in StatusData)
-            {
-                <MudItem xs="12">
-                    <MudPaper Class="pa-2">
-                        <MudText Typo="Typo.subtitle2">@item.Label</MudText>
-                        <MudProgressLinear Value="@item.Value" Color="@item.Color" Height="20" />
-                    </MudPaper>
-                </MudItem>
-            }
-        </MudGrid>
-    </MudCard>
-</MudContainer>

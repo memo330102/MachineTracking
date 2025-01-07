@@ -5,7 +5,7 @@
 <MudContainer MaxWidth="MaxWidth.Large" Style="padding: 20px;">
     <MudCard>
         <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Style="font-weight: bold; color: #2C3E50;">
-            📊 Machine Speed Performance
+            📈 Real-Time Speed Changes for Machine  @MachineData.Values.FirstOrDefault()?.MachineId
         </MudText>
         <MudPaper Elevation="4" Class="pa-4">
             @if (ChartSeriesData != null && ChartSeriesData.Any() && XAxisLabels != null && XAxisLabels.Any())
