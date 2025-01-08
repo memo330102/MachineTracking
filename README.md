@@ -28,8 +28,9 @@ A Blazor WebAssembly application for presenting machine data using a modern dash
   + Communicates with the API project via HttpClient.
   + Subscribes to real-time data updates from SignalR to display live data.
   + Dashboard includes:
-       * A list of machines.
+       * A list of machines' latest data.
        * Real-time graphs and charts.
+       * Machine History and Real-Time graphs
 
 **4. Application** 
 
@@ -58,12 +59,11 @@ A class library containing:
 
 # Steps to Run the Application
 1. **Clone the Repository**
-2.
     ```
     git clone https://github.com/memo330102/MachineTracking.git
     ```
-4. **Setup the PostgreSQL Database**
-5.    - Create a database named postgres.
+2. **Setup the PostgreSQL Database**
+      - Create a database named postgres.
       - Create the necessary schema and tables
  ```
 CREATE TABLE public.machinehistory (
@@ -78,7 +78,31 @@ CREATE TABLE public.machinehistory (
 	CONSTRAINT machinehistory_pkey PRIMARY KEY (id)
 );
  ```
-6. **Start the Mosquitto MQTT Broker**
-7. **Build and Run the Solution**
-8. **Run the Client Project**
-9. **Access the Application**
+3. **Start the Mosquitto MQTT Broker**
+   - Configure Mosquitto to simulate automotive machine data.
+ ```
+   mosquitto_pub -h localhost -t gotecgroup/machine -m "{\"MachineId\": \"M2\", \"Status\": \"EngineOn\", \"ChainMovesPerSecond\": 4.5, \"ArticleNumber\": \"A987654\"}"
+ ```
+4. **Build and Run the Solution**
+
+  - Open the solution in Visual Studio or use the CLI:
+ ```
+    dotnet build
+    dotnet run --project API
+    dotnet run --project Client
+ ```
+5. **Access the Application**
+- Open your browser and navigate to the URL provided (default is https://localhost:7045).
+
+# Technology Stack
+  - **Backend:** .NET 8, SignalR, MQTTnet, Dapper
+  - **Frontend:** Blazor WebAssembly, MudBlazor
+  - **Database:** PostgreSQL
+  - **Messaging Broker:** Mosquitto  (or other external brokers)
+
+# Key Features
+
+  - **Real-Time Data:** Utilizes SignalR and MQTT to handle live data updates.
+  - **Modern Dashboard UI:** Powered by Blazor WebAssembly and MudBlazor.
+  - **Modular Architecture:** Clean separation of concerns across layers for maintainability.
+  - **Scalable Design:** Can handle multiple machines with different topics and data streams simultaneously.
