@@ -43,13 +43,14 @@ A class library containing business logic.
 A class library that handles all database interactions.
 - **Features:**
     + Utilizes Dapper for efficient data access.
-    + Only interacts with the Application project for business rules.
+    + Only interacts with the Application and Domain projects for business rules.
       
 **6. Domain** 
 
 A class library containing:
 - Data Transfer Objects (DTOs).
 - Interfaces defining core contracts for communication between layers.
+- Enums.
 
 # Setup Instructions
 **Prerequisites**
