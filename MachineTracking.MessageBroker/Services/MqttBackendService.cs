@@ -46,11 +46,12 @@ namespace MachineTracking.MessageBroker.Services
 
                     _logger.Information($"Subscribed message: {payload}");
 
+                    _logger.Information($"Sending message to the SignalR Clients: {payload}");
+                    await _hubContext.Clients.All.SendAsync(_mqttSettings.HubMethodName, payload);
+
                     _logger.Information($"Saving message to Database: {payload}");
                     await _mqttDataService.SaveMqttMessageAsync(topic, payload, CancellationToken.None);
 
-                    _logger.Information($"Sending message to the SignalR Clients: {payload}");
-                    await _hubContext.Clients.All.SendAsync(_mqttSettings.HubMethodName, payload);
                 }
                 catch (Exception ex)
                 {
