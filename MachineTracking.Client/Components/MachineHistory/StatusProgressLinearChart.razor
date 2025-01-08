@@ -40,8 +40,8 @@
         int idleCount = MachineData.Values.Where(s => s.StatusId == (int)MachineStatusTypeEnum.Idle).Count();
         int unexpectedCount = MachineData.Values.Where(s => s.StatusId == (int)MachineStatusTypeEnum.Unexpected).Count();
 
-        StatusData.Add(new StatusItem { Label = "Active", Value = 156, Color = Color.Success });
-        StatusData.Add(new StatusItem { Label = "Inactive", Value = 100, Color = Color.Default });
+        StatusData.Add(new StatusItem { Label = "Active", Value = activeCount, Color = Color.Success });
+        StatusData.Add(new StatusItem { Label = "Inactive", Value = inactiveCount, Color = Color.Default });
         StatusData.Add(new StatusItem { Label = "Idle", Value = idleCount, Color = Color.Warning });
         StatusData.Add(new StatusItem { Label = "Unexpected", Value = unexpectedCount, Color = Color.Error });
 
