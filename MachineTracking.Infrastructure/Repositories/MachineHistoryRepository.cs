@@ -36,7 +36,7 @@ namespace MachineTracking.Infrastructure.Repositories
 
         public async Task<IEnumerable<MachineHistoryDTO>> GetAllAsync()
         {
-            const string query = "SELECT mh.MachineId, mh.DataReceivedTimestamp, mh.ArticleNumber, mh.ChainMovesPerSecond, mh.StatusId, mh.Status FROM MachineHistory mh";
+            const string query = @"SELECT mh.MachineId, mh.DataReceivedTimestamp, mh.ArticleNumber, mh.ChainMovesPerSecond, mh.StatusId, mh.Status FROM MachineHistory mh";
             return await _sqlQuery.QueryAsync<MachineHistoryDTO>(query);
         }
 
@@ -56,13 +56,13 @@ namespace MachineTracking.Infrastructure.Repositories
 
         public async Task<MachineHistoryDTO?> GetByIdAsync(int id)
         {
-            const string query = "SELECT mh.MachineId, mh.DataReceivedTimestamp, mh.ArticleNumber, mh.ChainMovesPerSecond, mh.StatusId, mh.Status FROM MachineHistory mh WHERE mh.Id = @Id";
+            const string query = @"SELECT mh.MachineId, mh.DataReceivedTimestamp, mh.ArticleNumber, mh.ChainMovesPerSecond, mh.StatusId, mh.Status FROM MachineHistory mh WHERE mh.Id = @Id";
             return await _sqlQuery.QueryAsyncFirstOrDefault<MachineHistoryDTO>(query, new { Id = id });
         }
 
         public async Task<IEnumerable<MachineHistoryDTO>> GetMachineHistoriesAsync(string machineId)
         {
-            const string query = "SELECT mh.MachineId, mh.DataReceivedTimestamp, mh.ArticleNumber, mh.ChainMovesPerSecond, mh.StatusId, mh.Status FROM MachineHistory mh WHERE mh.machineid = @MachineId ORDER BY mh.datareceivedtimestamp DESC ";
+            const string query = @"SELECT mh.MachineId, mh.DataReceivedTimestamp, mh.ArticleNumber, mh.ChainMovesPerSecond, mh.StatusId, mh.Status FROM MachineHistory mh WHERE mh.machineid = @MachineId ORDER BY mh.datareceivedtimestamp DESC ";
             return await _sqlQuery.QueryAsync<MachineHistoryDTO>(query, new { MachineId = machineId });
         }
     }
