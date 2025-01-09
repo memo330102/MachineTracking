@@ -10,7 +10,8 @@ namespace MachineTracking.Domain.DTOs.MQTT
     {
         public string[] Topics { get; set; } 
         public string ClientId { get; set; } = string.Empty;
-        public string TcpServer { get; set; } = string.Empty;
+        public string TcpServerHost { get; set; } = string.Empty;
+        public int? TcpServerPort { get; set; } 
         public string HubMethodName { get; set; }  = string.Empty;
     }
 }

@@ -68,7 +68,7 @@ namespace MachineTracking.MessageBroker.Services
 
                 var mqttOptions = new MqttClientOptionsBuilder()
                     .WithClientId(_mqttSettings.ClientId)
-                    .WithTcpServer(_mqttSettings.TcpServer) 
+                    .WithTcpServer(_mqttSettings.TcpServerHost,_mqttSettings.TcpServerPort) 
                     .Build();
 
                 _logger.Information($"Connecting to MQTT broker...");
