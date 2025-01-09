@@ -37,7 +37,7 @@ namespace MachineTracking.Client.Shared.Helpers
                 (int)MachineStatusTypeEnum.Active => Color.Success,
                 (int)MachineStatusTypeEnum.Inactive => Color.Default,
                 (int)MachineStatusTypeEnum.Idle => Color.Warning,
-                (int)MachineStatusTypeEnum.Unexpected => Color.Warning,
+                (int)MachineStatusTypeEnum.Unexpected => Color.Error,
                 _ => Color.Error
             };
         }
