@@ -2,6 +2,7 @@
 This project is a .NET-based application that simulates receiving data from automotive machines (via MQTT), stores the data in a PostgreSQL database, and visualizes the data on a real-time dashboard. The project consists of multiple components, including services for data collection, SignalR for real-time updates, and a web-based Blazor dashboard using MudBlazor.
 # Project Structure
 
+![https://github.com/memo330102/MachineTracking/blob/master/Project_Architecture.jpeg](https://github.com/memo330102/MachineTracking/blob/master/Project_Architecture.jpeg)
 **1. MessageBroker** 
 
 A class library responsible for interacting with the External MQTT broker(like Mosquitto) and managing real-time data flow.
